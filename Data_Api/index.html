@@ -12,27 +12,27 @@
       const imgs = ["ejc.jpg", "photo.jpg", "photo2.jpg"];
       // const container = document.getElementById("img-container");
 
-      imgs.forEach((img_name) => {
-        render(img_name)
-          .then((response) => {
-            console.log("yey");
-          })
-          .catch((err) => {
-            console.log("error!");
-            console.error(err);
-          });
-      });
+      render(imgs)
+        .then((response) => {
+          console.log("yey");
+        })
+        .catch((err) => {
+          console.log("error!");
+          console.error(err);
+        });
 
-      async function render(img_name) {
-        const container = document.getElementById("img-container");
-        const response = await fetch(`${img_name}`);
-        const blob = await response.blob();
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(blob);
-        img.alt = img_name;
-        img.width = "480";
-        img.classList.add("photo");
-        container.appendChild(img);
+      async function render(imgs) {
+        for (let img_name of imgs) {
+          const container = document.getElementById("img-container");
+          const response = await fetch(`${img_name}`);
+          const blob = await response.blob();
+          const img = document.createElement("img");
+          img.src = URL.createObjectURL(blob);
+          img.alt = img_name;
+          img.width = "480";
+          img.classList.add("photo");
+          container.appendChild(img);
+        }
         // document.getElementById(`${img_name}`).src = URL.createObjectURL(blob);
       }
     </script>
