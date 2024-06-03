@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fetch and Graph CSV</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <canvas id="chart" width="400" height="400"></canvas>
+
+    <script>
+      chartIt();
+      async function chartIt() {
+        const data = await getData();
+        console.log(data.xs, data.ys);
+
+        const ctx = document.getElementById("chart");
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: data.xs,
+            datasets: [
+              {
+                label:
+                  "Stan i struktura ludności według wieku w latach 1989 - 2022",
+                data: data.ys,
+                borderWidth: 1,
+              },
+            ],
+          },
+        });
+      }
+
+      async function getData() {
+        const respond = await fetch("test_pop.csv");
+        const data = await respond.text();
+        const table = data.split("\n");
+        const xs = table[0].split(",").slice(1);
+        const ys = table[1].split(",").slice(1);
+        return { xs, ys };
+      }
+    </script>
+  </body>
+</html>
