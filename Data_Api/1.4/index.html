@@ -4,12 +4,30 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Coding train</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <style>
+      #issMap {
+        height: 180px;
+      }
+    </style>
   </head>
   <body>
+    <div id="issMap"></div>
     <h1>Where is the ISS?</h1>
     <p>
-      latitude: <span id="lat"></span><br />
-      longitude: <span id="lon"></span>
+      latitude: <span id="lat"></span>°<br />
+      longitude: <span id="lon"></span>°
     </p>
 
     <script>
@@ -17,15 +35,35 @@
       const lat = document.getElementById("lat");
       const lon = document.getElementById("lon");
 
+      //Tworzenie mapy i tailsów
+      const map = L.map("issMap").setView([0, 0], 3);
+
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(map);
+
+      // Making an icon with custom styles
+      const issIcon = L.icon({
+        iconUrl: "iss200.png",
+        iconSize: [50, 32],
+        iconAnchor: [25, 16],
+      });
+      const marker = L.marker([0, 0], { icon: issIcon }).addTo(map);
+
       async function getISS() {
         const response = await fetch(api_url);
         const data = await response.json();
         const { latitude, longitude } = data;
-        lat.textContent = latitude;
-        lon.textContent = longitude;
+        lat.textContent = latitude.toFixed(2);
+        lon.textContent = longitude.toFixed(2);
+        map.setView([latitude, longitude], map.getZoom());
+        marker.setLatLng([latitude, longitude]);
       }
 
       getISS();
+      // setInterval(getISS, 1000);
     </script>
   </body>
 </html>
