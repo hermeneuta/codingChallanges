@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kwartet żonglerski</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <style>
+      #map {
+        height: 580px;
+      }
+      img.huechange {
+        filter: hue-rotate(120deg);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>w KoloŻe</h1>
+    <div id="map"></div>
+
+    <script>
+      const grania = [
+        {
+          miasto: "Warszawa",
+          co: "spektakl",
+          kiedy: ["2023-12-02", "2023-12-03"],
+          organizator: "Instytut Teatralny",
+          koord: [52.23, 21.0],
+          archive: true,
+        },
+        {
+          miasto: "Warszawa",
+          co: "spektakl",
+          kiedy: "2024-06-03",
+          organizator: "Centrum Kultury i Aktywności",
+          koord: [52.26, 21.04],
+          archive: true,
+        },
+        {
+          miasto: "Wohyń",
+          co: "spektakl",
+          kiedy: "2022-11-11",
+          organizator: "Igrce",
+          koord: [51.76, 22.79],
+          archive: true,
+        },
+        {
+          miasto: "Berezówka",
+          co: "spektakl",
+          kiedy: "2023-12-01",
+          organizator: "Igrce",
+          koord: [52.1, 23.45],
+          archive: true,
+        },
+        {
+          miasto: "Karpacz",
+          co: "spektakl",
+          kiedy: "2023-08-18",
+          organizator: "Open Street Festival",
+          koord: [50.77, 15.75],
+          archive: true,
+        },
+        {
+          miasto: "Chełm",
+          co: "spektakl",
+          kiedy: "2023-09-17",
+          organizator: "Cyrkoprzestrzeń",
+          koord: [51.14, 23.48],
+          archive: true,
+        },
+        {
+          miasto: "Budapeszt",
+          co: "Fuks",
+          kiedy: "2024-04-28",
+          organizator: "One Two Many",
+          koord: [47.5, 19.04],
+          archive: true,
+        },
+        {
+          miasto: "Lublin",
+          co: "spektakl",
+          kiedy: "2022-12-03",
+          organizator: "Variete",
+          koord: [51.25, 22.56],
+          archive: true,
+        },
+        {
+          miasto: "Kalisz",
+          co: "spektakl",
+          kiedy: "2024-06-15",
+          organizator: "La Strada",
+          koord: [51.77, 18.09],
+          archive: false,
+        },
+        {
+          miasto: "Wrocław",
+          co: "spektakl",
+          kiedy: "2024-06-22",
+          organizator: "Cyrkopole",
+          koord: [51.11, 17.05],
+          archive: false,
+        },
+      ];
+
+      //Tworzenie mapy i tailsów
+      const map = L.map("map").setView([51.29, 18.91], 6);
+
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      }).addTo(map);
+
+      async function markGrania() {
+        grania.forEach((granie) => {
+          const marker = L.marker([granie.koord[0], granie.koord[1]])
+            .bindTooltip(
+              `${granie.miasto}, ${granie.co}, ${granie.organizator}, ${granie.kiedy}`,
+            )
+            .addTo(map);
+          // marker._icon.classList.add("huechange");
+          if (granie.archive) marker._icon.style.filter = "hue-rotate(20deg)";
+          else marker._icon.style.filter = "hue-rotate(120deg)";
+        });
+      }
+
+      markGrania();
+    </script>
+  </body>
+</html>
