@@ -48,6 +48,7 @@
       </div>
       <div class="con_child summary">
         <button id="btn_get">Get all data</button>
+        <button id="btn_clear">Clear all data</button>
         <div id="all_data" class="all_data"></div>
       </div>
     </div>
@@ -81,6 +82,13 @@
           const marker = L.marker([lat, lon])
             .bindTooltip("Moja aktualna lokalizacja.")
             .addTo(map);
+        });
+
+        document.getElementById("btn_clear").addEventListener("click", () => {
+          const childContainer = document.querySelector(
+            ".container .summary .all_data",
+          );
+          childContainer.innerHTML = "";
         });
 
         //EventListener to get all data from the server
