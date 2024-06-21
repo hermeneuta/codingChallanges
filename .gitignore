@@ -2,3 +2,5 @@ Data_Api/1.1/photo.jpg
 Data_Api/1.1/photo2.jpg
 
 */**/node_modules
+
+*/**/database.db

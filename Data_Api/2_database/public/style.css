@@ -1,0 +1,10 @@
+.container {
+  display: flex;
+  flex-flow: row;
+  border: 1px solid black;
+}
+
+.con_child {
+  flex: 1;
+  border: 2px solid green;
+}

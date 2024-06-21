@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <title>Server side</title>
+    <style>
+      #map {
+        height: 580px;
+      }
+      img.huechange {
+        filter: hue-rotate(120deg);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Data Selfie App</h1>
+    <!-- <a href="index.html">hello</a> | <a href="goodbye/index.html">goodbye</a> -->
+    <p>Hello!</p>
+    <p>
+      latitude: <span id="lat"></span>&deg<br />
+      longitude: <span id="lon"></span>&deg
+    </p>
+    <form id="phil-form">
+      <label for="concept">Twoje ulubione zagadnienie filozoficzne: </label>
+      <input type="text" id="concept" name="concept" required />
+      <input type="submit" value="Submit" /><br />
+    </form>
+
+    <div id="result"></div>
+    <div class="container">
+      <div class="con_child">
+        <button id="btn_map">Generate map</button>
+        <div id="map"></div>
+      </div>
+      <div class="con_child summary">
+        <button id="btn_get">Get all data</button>
+        <div id="all_data" class="all_data"></div>
+      </div>
+    </div>
+
+    <script>
+      if ("geolocation" in navigator) {
+        console.log("geolocation available");
+      } else {
+        console.log("geolocation not available");
+      }
+
+      const btn_server = document.getElementById("btn_server");
+      const btn_map = document.getElementById("btn_map");
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        //Getting info about geolocation
+        const lat = await position.coords.latitude.toFixed(2);
+        const lon = await position.coords.longitude.toFixed(2);
+        document.getElementById("lat").textContent = lat;
+        document.getElementById("lon").textContent = lon;
+
+        btn_map.addEventListener("click", () => {
+          //Creating map
+          const map = L.map("map").setView([51.29, 18.91], 6);
+
+          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution:
+              '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          }).addTo(map);
+          const marker = L.marker([lat, lon])
+            .bindTooltip("Moja aktualna lokalizacja.")
+            .addTo(map);
+        });
+
+        //EventListener to get all data from the server
+        document
+          .getElementById("btn_get")
+          .addEventListener("click", async () => {
+            const childContainer = document.querySelector(
+              ".container .summary .all_data",
+            );
+            try {
+              const options = {
+                method: "GET",
+              };
+              const response = await fetch("/api", options);
+              const result = await response.json();
+              console.log(result);
+
+              //Oczyszczenie elementu div z poprzednich treści
+              childContainer.innerHTML = "";
+              for (item of result) {
+                const root = document.createElement("div");
+                const concept = document.createElement("div");
+                const geo = document.createElement("div");
+                const date = document.createElement("div");
+                const dateString = new Date(item.timestamp).toLocaleString();
+
+                concept.textContent = `concept: ${item.concept}`;
+                geo.textContent = `${item.lat}, ${item.lon}`;
+                date.textContent = dateString;
+
+                //Przygotowanie paczki nowych danych
+                root.append(concept, geo, date);
+
+                //Wrzucenie przygotowanej paczki w odpowiednie miejsce
+                childContainer.append(root);
+              }
+            } catch (error) {
+              console.log(error);
+              document.getElementById("all_data").textContent =
+                "An error occured.";
+            }
+          });
+
+        document
+          .getElementById("phil-form")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            data.lat = lat;
+            data.lon = lon;
+
+            try {
+              const options = {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+              };
+              const response = await fetch("/api", options);
+              const result = await response.json();
+              document.getElementById("result").textContent = result.message;
+            } catch (error) {
+              console.log(error);
+              document.getElementById("result").textContent =
+                "An error occured.";
+            }
+          });
+      });
+    </script>
+  </body>
+</html>

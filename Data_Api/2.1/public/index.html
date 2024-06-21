@@ -29,6 +29,15 @@
     <h1>Data Selfie App</h1>
     <!-- <a href="index.html">hello</a> | <a href="goodbye/index.html">goodbye</a> -->
     <p>Hello!</p>
+    <p>
+      latitude: <span id="lat"></span>&deg<br />
+      longitude: <span id="lon"></span>&deg
+    </p>
+    <button id="btn_server">Send to the server</button>
+    <button id="btn_map">Generate map</button>
+
+    <div id="map"></div>
+
     <script>
       if ("geolocation" in navigator) {
         console.log("geolocation available");
@@ -36,28 +45,46 @@
         console.log("geolocation not available");
       }
 
-      navigator.geolocation.getCurrentPosition((position) => {
+      const btn_server = document.getElementById("btn_server");
+      const btn_map = document.getElementById("btn_map");
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        //Getting info about geolocation
         const lat = position.coords.latitude.toFixed(2);
         const lon = position.coords.longitude.toFixed(2);
         document.getElementById("lat").textContent = lat;
         document.getElementById("lon").textContent = lon;
 
-        const map = L.map("map").setView([51.29, 18.91], 6);
+        btn_map.addEventListener("click", () => {
+          //Creating map
+          const map = L.map("map").setView([51.29, 18.91], 6);
 
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution:
-            '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        }).addTo(map);
-        const marker = L.marker([lat, lon])
-          .bindTooltip("Moja aktualna lokacja.")
-          .addTo(map);
+          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution:
+              '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          }).addTo(map);
+          const marker = L.marker([lat, lon])
+            .bindTooltip("Moja aktualna lokacja.")
+            .addTo(map);
+        });
+
+        btn_server.addEventListener("click", async () => {
+          // Sending geolocation to server
+          const data = { lat, lon };
+          const options = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          };
+          const response = await fetch("/api", options);
+          const json = await response.json();
+
+          console.log(json);
+        });
       });
     </script>
-    <p>
-      latitude: <span id="lat"></span>&deg<br />
-      longitude: <span id="lon"></span>&deg
-    </p>
-    <div id="map"></div>
   </body>
 </html>

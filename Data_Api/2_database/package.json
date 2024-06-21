@@ -12,7 +12,9 @@
   "author": "Mathesis",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.20.2",
     "crypto": "^1.0.1",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "nedb": "^1.8.0"
   }
 }
