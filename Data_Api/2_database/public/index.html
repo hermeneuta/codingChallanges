@@ -34,11 +34,9 @@
       latitude: <span id="lat"></span>&deg<br />
       longitude: <span id="lon"></span>&deg
     </p>
-    <form id="phil-form">
-      <label for="concept">Twoje ulubione zagadnienie filozoficzne: </label>
-      <input type="text" id="concept" name="concept" required />
-      <input type="submit" value="Submit" /><br />
-    </form>
+
+    <input type="text" id="concept" value="philo" />
+    <button id="submit">Prześlij na serwer</button>
 
     <div id="result"></div>
     <div class="container">
@@ -57,24 +55,26 @@
       //p5.js
       //funkcja setup jest dedykowaną funkcją dla p5.js
       function setup() {
+        noCanvas();
         //checking if i have navigator
         if ("geolocation" in navigator) {
           console.log("geolocation available");
         } else {
           console.log("geolocation not available");
         }
+        const video = createCapture(VIDEO);
+        video.size(320, 240);
 
         const btn_server = document.getElementById("btn_server");
         const btn_map = document.getElementById("btn_map");
 
+        let lat, lon;
+
         navigator.geolocation.getCurrentPosition(async (position) => {
           //Getting info about geolocation
 
-          const video = createCapture(VIDEO);
-          video.size(320, 240);
-
-          const lat = await position.coords.latitude.toFixed(2);
-          const lon = await position.coords.longitude.toFixed(2);
+          lat = await position.coords.latitude.toFixed(2);
+          lon = await position.coords.longitude.toFixed(2);
           document.getElementById("lat").textContent = lat;
           document.getElementById("lon").textContent = lon;
 
@@ -91,90 +91,87 @@
               .bindTooltip("Moja aktualna lokalizacja.")
               .addTo(map);
           });
+        });
 
-          document.getElementById("btn_clear").addEventListener("click", () => {
+        document.getElementById("btn_clear").addEventListener("click", () => {
+          const childContainer = document.querySelector(
+            ".container .summary .all_data",
+          );
+          childContainer.innerHTML = "";
+        });
+
+        //EventListener to get all data from the server
+        document
+          .getElementById("btn_get")
+          .addEventListener("click", async () => {
             const childContainer = document.querySelector(
               ".container .summary .all_data",
             );
-            childContainer.innerHTML = "";
+            try {
+              const options = {
+                method: "GET",
+              };
+              const response = await fetch("/api", options);
+              const result = await response.json();
+              console.log(result);
+
+              //Oczyszczenie elementu div z poprzednich treści
+              childContainer.innerHTML = "";
+              for (item of result) {
+                const root = document.createElement("div");
+                const concept = document.createElement("div");
+                const geo = document.createElement("div");
+                const date = document.createElement("div");
+                const image = document.createElement("img");
+                const dateString = new Date(item.timestamp).toLocaleString();
+
+                concept.textContent = `concept: ${item.concept}`;
+                geo.textContent = `${item.lat}, ${item.lon}`;
+                date.textContent = dateString;
+                image.src = item.image64;
+
+                //Przygotowanie paczki nowych danych
+                root.append(concept, geo, date, image);
+
+                //Wrzucenie przygotowanej paczki w odpowiednie miejsce
+                childContainer.append(root);
+              }
+            } catch (error) {
+              console.log(error);
+              document.getElementById("all_data").textContent =
+                "An error occured.";
+            }
           });
 
-          //EventListener to get all data from the server
-          document
-            .getElementById("btn_get")
-            .addEventListener("click", async () => {
-              const childContainer = document.querySelector(
-                ".container .summary .all_data",
-              );
-              try {
-                const options = {
-                  method: "GET",
-                };
-                const response = await fetch("/api", options);
-                const result = await response.json();
-                console.log(result);
+        document
+          .getElementById("submit")
+          .addEventListener("click", async function () {
+            const concept = document.getElementById("concept").value;
 
-                //Oczyszczenie elementu div z poprzednich treści
-                childContainer.innerHTML = "";
-                for (item of result) {
-                  const root = document.createElement("div");
-                  const concept = document.createElement("div");
-                  const geo = document.createElement("div");
-                  const date = document.createElement("div");
-                  const image = document.createElement("img");
-                  const dateString = new Date(item.timestamp).toLocaleString();
+            video.loadPixels();
+            const image64 = video.canvas.toDataURL();
 
-                  concept.textContent = `concept: ${item.concept}`;
-                  geo.textContent = `${item.lat}, ${item.lon}`;
-                  date.textContent = dateString;
-                  image.src = item.image64;
+            const data = { lat, lon, concept, image64 };
 
-                  //Przygotowanie paczki nowych danych
-                  root.append(concept, geo, date, image);
-
-                  //Wrzucenie przygotowanej paczki w odpowiednie miejsce
-                  childContainer.append(root);
-                }
-              } catch (error) {
-                console.log(error);
-                document.getElementById("all_data").textContent =
-                  "An error occured.";
-              }
-            });
-
-          document
-            .getElementById("phil-form")
-            .addEventListener("submit", async function (e) {
-              e.preventDefault();
-              const formData = new FormData(this);
-              const data = Object.fromEntries(formData.entries());
-
-              video.loadPixels();
-              const image64 = video.canvas.toDataURL();
-              data.lat = lat;
-              data.lon = lon;
-              data.image64 = image64;
-
-              try {
-                const options = {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(data),
-                };
-                const response = await fetch("/api", options);
-                const result = await response.json();
-                document.getElementById("result").textContent = result.message;
-              } catch (error) {
-                console.log(error);
-                document.getElementById("result").textContent =
-                  "An error occured.";
-              }
-            });
-        });
+            try {
+              const options = {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+              };
+              const response = await fetch("/api", options);
+              const result = await response.json();
+              console.log(result);
+              document.getElementById("result").textContent = result.message;
+            } catch (error) {
+              console.log(error);
+              document.getElementById("result").textContent =
+                "An error occured.";
+            }
+          });
         //deaktywacja canvy
-        noCanvas();
       }
     </script>
   </body>
