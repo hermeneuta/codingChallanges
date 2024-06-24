@@ -8,3 +8,10 @@
   flex: 1;
   border: 2px solid green;
 }
+
+#map {
+  height: 580px;
+}
+img.huechange {
+  filter: hue-rotate(120deg);
+}
