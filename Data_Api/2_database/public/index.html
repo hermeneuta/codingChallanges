@@ -42,7 +42,7 @@
     <div class="container">
       <div class="con_child">
         <button id="btn_map">Generate map</button>
-        <div id="map"></div>
+        <div id="map" class="map"></div>
       </div>
       <div class="con_child summary">
         <button id="btn_get">Get all data</button>
@@ -78,9 +78,15 @@
           document.getElementById("lat").textContent = lat;
           document.getElementById("lon").textContent = lon;
 
+          let map;
           btn_map.addEventListener("click", () => {
             //Creating map
-            const map = L.map("map").setView([51.29, 18.91], 6);
+            if (map != undefined) {
+              map.remove();
+              map.off();
+            }
+
+            map = L.map("map").setView([51.29, 18.91], 6);
 
             L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
               maxZoom: 19,
@@ -128,7 +134,7 @@
                 concept.textContent = `concept: ${item.concept}`;
                 geo.textContent = `${item.lat}, ${item.lon}`;
                 date.textContent = dateString;
-                image.src = item.image64;
+                image.src = "/data/" + item.image_file;
 
                 //Przygotowanie paczki nowych danych
                 root.append(concept, geo, date, image);

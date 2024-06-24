@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const Datastore = require("nedb");
+const fs = require("fs");
 
 // Aim of that server:
 // 1. Serve a web page, eg. index.html
@@ -33,12 +34,15 @@ app.post("/api", (req, res) => {
   const data = req.body;
   const timestamp = Date.now();
   data.timestamp = timestamp;
+  //creating new file for image
+  data.image_file = `image_${timestamp}.png`;
+
+  const base64Data = data.image64.replace(/^data:image\/png;base64,/, "");
+  fs.writeFileSync(`public/data/${data.image_file}`, base64Data, "base64");
+
+  delete data.image64;
+
   database.insert(data);
-  res.json({
-    status: "success",
-    timestamp: timestamp,
-    latitude: data.lat,
-    longitude: data.lon,
-    message: `Dane zostały przesłane na serwer!`,
-  });
+
+  res.json(data);
 });
